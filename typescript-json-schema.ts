@@ -20,6 +20,7 @@ export function getDefaultArgs(): Args {
         aliasRef: false,
         topRef: false,
         titles: false,
+        desctitles: false,
         defaultProps: false,
         noExtraProps: false,
         propOrder: false,
@@ -47,6 +48,7 @@ export type Args = {
     aliasRef: boolean;
     topRef: boolean;
     titles: boolean;
+    desctitles: boolean;
     defaultProps: boolean;
     noExtraProps: boolean;
     propOrder: boolean;
@@ -450,11 +452,21 @@ export class JsonSchemaGenerator {
         const comments = symbol.getDocumentationComment(this.tc);
 
         if (comments.length) {
-            definition.description = comments
+            let description = comments
                 .map((comment) =>
                     comment.kind === "lineBreak" ? comment.text : comment.text.trim().replace(/\r\n/g, "\n")
                 )
-                .join("");
+                .join("\n").split(/\n/)
+
+            if (this.args.desctitles) {
+                let head = description.splice(0, 1)[0];
+                definition.title = head;
+              // console.error(`setting title to the first line of description: ${definition.title}`)
+            }
+
+            if (description.length) {
+                definition.description = description.join("\n");
+            }
         }
 
         // jsdocs are separate from comments
